@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Emotion</title>
+<style>
+body{margin:0;background:black;color:white;font-family:monospace;overflow:hidden}
+
+canvas{position:fixed;top:0;left:0}
+
+.container{position:relative;z-index:2;text-align:center}
+
+.box{border:2px solid lime;display:inline-block;margin-top:20px}
+
+.left{position:absolute;left:20px;top:100px;width:200px;border:1px solid lime;padding:10px}
+</style>
+</head>
+
+<body>
+
+<canvas id="m"></canvas>
+
+<div class="container">
+
+<h2 style="color:lime">EMOTION</h2>
+
+<div class="left">
+<h3>LIVE OUTPUT</h3>
+<div id="t">Waiting...</div>
+<br>
+<a href="/" style="color:lime">BACK</a>
+</div>
+
+<div class="box">
+<img src="/video">
+</div>
+
+</div>
+
+<script>
+setInterval(()=>{
+fetch("/emotion_data")
+.then(r=>r.json())
+.then(d=>{
+document.getElementById("t").innerText=d.emotion;
+});
+},500);
+
+// matrix
+const c=document.getElementById("m");
+const ctx=c.getContext("2d");
+c.width=innerWidth;c.height=innerHeight;
+let a="01".split("");
+let s=14;
+let col=c.width/s;
+let d=[];
+for(let i=0;i<col;i++)d[i]=1;
+
+setInterval(()=>{
+ctx.fillStyle="rgba(0,0,0,0.05)";
+ctx.fillRect(0,0,c.width,c.height);
+ctx.fillStyle="#0f0";
+ctx.font=s+"px monospace";
+
+for(let i=0;i<d.length;i++){
+let t=a[Math.floor(Math.random()*2)];
+ctx.fillText(t,i*s,d[i]*s);
+if(d[i]*s>c.height)d[i]=0;
+d[i]++;
+}
+},33);
+</script>
+
+</body>
+</html>

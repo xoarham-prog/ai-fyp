@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Emotion & Lie Detector</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            color: white;
+            font-family: monospace;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+        }
+
+        h2 {
+            text-align: center;
+            color: lime;
+            position: relative;
+            z-index: 2;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .camera-box {
+            border: 2px solid lime;
+        }
+
+        .output-box {
+            width: 320px;
+            height: 320px;
+            border: 1px solid lime;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #emotionText {
+            font-size: 28px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        #lieText {
+            text-align: center;
+            margin-top: 20px;
+            color: cyan;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+
+<h2>AI EMOTION + LIE DETECTOR SYSTEM</h2>
+
+<div class="container">
+
+    <div class="camera-box">
+        <img src="{{ url_for('video_feed') }}">
+    </div>
+
+    <div class="output-box">
+        <h2>LIVE OUTPUT</h2>
+
+        <div id="emotionText">Waiting...</div>
+        <div id="lieText">Truth Probability: --</div>
+
+    </div>
+
+</div>
+
+<script>
+
+function getEmotionColor(emotion) {
+    if (emotion === "happy") return "lime";
+    if (emotion === "sad") return "deepskyblue";
+    if (emotion === "angry") return "red";
+    if (emotion === "neutral") return "white";
+    if (emotion === "fear") return "orange";
+    if (emotion === "surprise") return "yellow";
+    return "gray";
+}
+
+// LIVE DATA FETCH
+function updateData() {
+    fetch("/data")
+    .then(res => res.json())
+    .then(data => {
+
+        let emo = data.emotion;
+        let score = data.lie_score;
+
+        document.getElementById("emotionText").innerText = emo;
+        document.getElementById("emotionText").style.color = getEmotionColor(emo);
+
+        document.getElementById("lieText").innerText =
+            "Truth Probability: " + score + "%";
+
+        if (score > 70) {
+            document.getElementById("lieText").style.color = "red";
+        } else if (score > 40) {
+            document.getElementById("lieText").style.color = "orange";
+        } else {
+            document.getElementById("lieText").style.color = "lime";
+        }
+
+    });
+}
+
+setInterval(updateData, 800);
+
+</script>
+
+<!-- MATRIX BACKGROUND -->
+<script>
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
+
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+
+let letters = "01".split("");
+let fontSize = 14;
+let columns = canvas.width / fontSize;
+
+let drops = [];
+
+for (let x = 0; x < columns; x++)
+    drops[x] = 1;
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "#0F0";
+    ctx.font = fontSize + "px monospace";
+
+    for (let i = 0; i < drops.length; i++) {
+        let text = letters[Math.floor(Math.random() * letters.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975)
+            drops[i] = 0;
+
+        drops[i]++;
+    }
+}
+
+setInterval(drawMatrix, 33);
+</script>
+
+</body>
+</html>
